@@ -3,6 +3,8 @@ from random import random, randint
 from torch import tensor
 import torch
 
+from enums.Exploration import Exploration
+
 
 class ActionSelector:
     def __init__(self,
@@ -18,12 +20,12 @@ class ActionSelector:
         self.steps = 0
         self.device = device
 
-    def select_action(self, model, state, with_eps_greedy=True):
+    def select_action(self, model, state, with_eps_greedy=Exploration.ON):
         eps = self.end_eps + (self.start_eps - self.end_eps) * math.exp(-self.steps / self.eps_decay)
         if with_eps_greedy:
             self.steps += 1
 
-        if eps < random() or not with_eps_greedy:
+        if eps < random() or with_eps_greedy == Exploration.OFF:
             with torch.no_grad():
                 return model(state).max(1)[1].view(1, 1)
         else:

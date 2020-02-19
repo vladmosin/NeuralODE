@@ -2,6 +2,7 @@ import numpy as np
 from torch import tensor
 import torch
 
+
 class Transition:
     def __init__(self, device, state, action, next_state, reward, done):
         self.state = state

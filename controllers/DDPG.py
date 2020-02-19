@@ -7,7 +7,7 @@ from torch.nn.functional import smooth_l1_loss
 from tqdm import tqdm
 
 from Agents import CommonAgent
-from ActionSelector import NoisedSelector
+from utils.ActionSelector import NoisedSelector
 from utils.MemoryReplay import MemoryReplay
 from utils.RewardConverter import CartPoleConverter
 
