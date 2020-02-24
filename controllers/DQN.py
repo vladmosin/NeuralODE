@@ -18,7 +18,7 @@ env = gym.make(env_name)
 test_env = gym.make(env_name)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-TEST_EPISODES = 1000
+TEST_EPISODES = 10
 
 
 def optimize_model():

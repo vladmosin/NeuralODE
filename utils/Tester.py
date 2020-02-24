@@ -3,7 +3,7 @@ from itertools import count
 from enums.AgentType import AgentType
 from enums.DistanceType import DistanceType
 from enums.Exploration import Exploration
-from loggers.CSVLogger import CSVLogger
+from loggers.Logger import Logger
 from loggers.TicksCounter import TicksCounter
 from utils.Utils import to_tensor
 
@@ -29,12 +29,12 @@ class Tester:
         self.first_test = first_test
 
     def create_csv_logger(self):
-        return CSVLogger(agent_type=self.agent_type,
-                         algorithm=self.algorithm,
-                         distance=self.distance,
-                         distance_type=self.distance_type,
-                         exploration=self.exploration,
-                         start_distance=self.first_test)
+        return Logger(agent_type=self.agent_type,
+                      algorithm=self.algorithm,
+                      distance=self.distance,
+                      distance_type=self.distance_type,
+                      exploration=self.exploration,
+                      start_distance=self.first_test)
 
     def create_ticks_counter(self):
         return TicksCounter(steps=self.distance,

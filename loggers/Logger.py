@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
+from tensorboardX import SummaryWriter
 
 """
 Writes rewards to file located in data/csv/
@@ -13,7 +14,7 @@ Filename is a date and time of experiment
 """
 
 
-class CSVLogger:
+class Logger:
     def __init__(self, algorithm, distance_type, exploration,
                  agent_type, distance, start_distance=1):
         self.rewards = []
@@ -52,3 +53,6 @@ class CSVLogger:
             self.algorithm, self.agent_type, self.exploration, self.distance_type, self.distance)
 
         return directory, filename
+
+    def to_tensorboard(self):
+        pass
