@@ -21,7 +21,7 @@ class CSVLogger:
         self.distance_type = distance_type.value
         self.distance = distance
         self.start_distance = start_distance
-        self.agent_type = agent_type
+        self.agent_type = agent_type.value
         self.exploration = exploration.value
 
     # reward is 1-dimensional tensor
