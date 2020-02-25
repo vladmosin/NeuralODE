@@ -6,7 +6,7 @@ import torch
 def backprop(loss: torch.Tensor, model: torch.nn.Module, optimizer):
     optimizer.zero_grad()
     loss.backward()
-    for param in model.parameters():
+    for i, param in enumerate(model.parameters()):
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 

@@ -1,5 +1,5 @@
 from torch import nn
-from torchdiffeq import odeint_adjoint as odeint
+from torchdiffeq import odeint
 from torch import tensor
 import torch
 

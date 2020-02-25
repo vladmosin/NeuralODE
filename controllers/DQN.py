@@ -103,3 +103,4 @@ if __name__ == '__main__':
 
     train()
     logger.to_csv()
+    logger.to_tensorboard()

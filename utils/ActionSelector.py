@@ -41,17 +41,17 @@ class NoisedSelector:
                  eps_decay):
         self.low = tensor(action_space.low[0], device=device)
         self.high = tensor(action_space.high[0], device=device)
-        self.action_dim = action_space.dim[0]
+        self.action_dim = action_space.shape[0]
         self.start_eps = start_eps
         self.end_eps = end_eps
         self.eps = start_eps
         self.eps_decay = eps_decay
 
     def select_action(self, model, state, with_eps_greedy=True):
-        action = model(state)
+        action = model(state).view(-1, 1)
         noise = self.eps * (random() - 0.5)
 
         if with_eps_greedy:
-            (action + noise).clamp(self.low, self.high)
+            return (action + noise).clamp(self.low, self.high)
         else:
             return action

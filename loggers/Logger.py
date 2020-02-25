@@ -2,9 +2,11 @@ from datetime import datetime
 import pandas as pd
 from pathlib import Path
 from tensorboardX import SummaryWriter
+import numpy as np
 
 """
-Writes rewards to file located in data/csv/
+Writes rewards to file located in data/
+Next folder is csv or tensorboard 
 Next folder is algorithm (DQN, DDPG, ...)
 Next folder is type of distance between to test measurements (Episode, OptimizeStep)
 Next folder is Exploration or Exploit 
@@ -33,7 +35,7 @@ class Logger:
     def to_csv(self):
         distances, csv_rewards, indexes = [], [], []
         current_distance = self.start_distance
-        directory, filename = self.file_path()
+        directory, filename = self.file_path("csv")
 
         for i, epoch_rewards in enumerate(self.rewards):
             csv_rewards += epoch_rewards
@@ -47,12 +49,23 @@ class Logger:
         Path(directory).mkdir(parents=True, exist_ok=True)
         data.to_csv("{}/{}".format(directory, filename))
 
-    def file_path(self):
+    # log type: csv or tensorboard
+    def file_path(self, log_type):
         filename = "{}.csv".format(datetime.now().strftime('%Y-%m-%d_%H-%M'))
-        directory = "../data/csv/{}/{}/{}/{}/{}".format(
-            self.algorithm, self.agent_type, self.exploration, self.distance_type, self.distance)
+        directory = "../data/{}/{}/{}/{}/{}/{}".format(
+            log_type, self.algorithm, self.agent_type,
+            self.exploration, self.distance_type, self.distance)
 
         return directory, filename
 
     def to_tensorboard(self):
-        pass
+        directory, filename = self.file_path("tensorboard")
+        experiment_directory = filename[:-4]  # remove extension
+        tb_writer = SummaryWriter("{}/{}".format(directory, experiment_directory))
+
+        for i, reward in enumerate(self.rewards):
+            reward = np.array(reward)
+            tb_writer.add_scalar("mean", reward.mean(), i)
+            tb_writer.add_scalar("std", reward.std(), i)
+
+        tb_writer.close()

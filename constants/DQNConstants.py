@@ -1,6 +1,7 @@
 import torch
 
 from agents.CommonAgent import CommonAgent
+from agents.ODEAgent import ODEAgent
 from enums.AgentType import AgentType
 from utils.ActionSelector import ActionSelector
 from utils.MemoryReplay import MemoryReplay
@@ -9,12 +10,12 @@ from utils.RewardConverter import CartPoleConverter
 
 class DQNConstants:
     def __init__(self, device, env):
-        self.num_episodes = 1000
+        self.num_episodes = 300
         self.test_episodes = 10
         self.batch_size = 64
         self.target_update = 5
         self.gamma = 0.999
-        self.agent_type = AgentType.Common
+        self.agent_type = AgentType.ODE
         self.device = device
         self.env = env
 
@@ -30,14 +31,19 @@ class DQNConstants:
         state_space_dim = self.env.observation_space.shape[0]
         action_space_dim = self.env.action_space.n
 
-        policy_net = CommonAgent(
+        if self.agent_type == AgentType.ODE:
+            net = ODEAgent
+        else:
+            net = CommonAgent
+
+        policy_net = net(
             device=self.device,
             neuron_number=self.neuron_number,
             input_dim=state_space_dim,
             output_dim=action_space_dim
         )
 
-        target_net = CommonAgent(
+        target_net = net(
             device=self.device,
             neuron_number=self.neuron_number,
             input_dim=state_space_dim,

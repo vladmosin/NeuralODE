@@ -1,6 +1,9 @@
+import copy
+
 import torch
 
 from agents.CommonAgent import CommonAgent
+from enums.AgentType import AgentType
 from utils.ActionSelector import NoisedSelector
 from utils.MemoryReplay import MemoryReplay
 from utils.RewardConverter import MountainCarConverter
@@ -12,7 +15,7 @@ class DDPGConstants:
         self.env = env
         self.gamma = 0.999
         self.tau = 0.05
-        self.agent_type = CommonAgent
+        self.agent_type = AgentType.Common
 
         self.num_episodes = 300
         self.start_eps = 0.9
@@ -22,6 +25,7 @@ class DDPGConstants:
         self.memory_size = 20000
         self.critic_lr = 1e-4
         self.actor_lr = 1e-4
+        self.batch_size = 64
 
     def get_models(self):
         state_space_dim = self.env.observation_space.shape[0]
@@ -32,19 +36,28 @@ class DDPGConstants:
             neuron_number=self.neuron_number,
             input_dim=state_space_dim,
             output_dim=action_space_dim
-        )
+        ).double()
 
         critic = CommonAgent(
             device=self.device,
             neuron_number=self.neuron_number,
             input_dim=state_space_dim + action_space_dim,
             output_dim=1
-        )
+        ).double()
 
         critic_optimizer = torch.optim.Adam(critic.parameters(), lr=self.critic_lr)
         actor_optimizer = torch.optim.Adam(actor.parameters(), lr=self.actor_lr)
 
-        return actor, critic, actor_optimizer, critic_optimizer
+        target_actor = copy.deepcopy(actor)
+        target_critic = copy.deepcopy(critic)
+
+        full_critic = critic
+        full_critic.target = target_critic
+
+        full_actor = actor
+        full_actor.target = target_actor
+
+        return full_actor, full_critic, actor_optimizer, critic_optimizer
 
     def get_action_selector(self):
         return NoisedSelector(action_space=self.env.action_space,
