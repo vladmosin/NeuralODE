@@ -34,6 +34,7 @@ def optimize_model():
     expected_reward = (next_profit.unsqueeze(1) * dqn_config.gamma) + rewards
 
     loss = F.smooth_l1_loss(profit, expected_reward)
+    logger.add_loss(loss)
     backprop(loss, policy_net, optimizer)
 
 
@@ -67,6 +68,9 @@ def train():
 
         if i % dqn_config.target_update == 0:
             target_net.load_state_dict(policy_net.state_dict())
+
+        if len(logger.current_losses) > 0:
+            logger.add_average_loss()
 
         ticks_counter.step(DistanceType.BY_EPISODE)
         if ticks_counter.test_time():
@@ -104,3 +108,4 @@ if __name__ == '__main__':
     train()
     logger.to_csv()
     logger.to_tensorboard()
+    logger.save_losses(str(dqn_config))

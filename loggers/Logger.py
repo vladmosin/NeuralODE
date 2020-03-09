@@ -2,6 +2,7 @@ from datetime import datetime
 import pandas as pd
 from pathlib import Path
 from tensorboardX import SummaryWriter
+import torch
 import numpy as np
 
 """
@@ -26,10 +27,29 @@ class Logger:
         self.start_distance = start_distance
         self.agent_type = agent_type.value
         self.exploration = exploration.value
+        self.losses = []
+        self.current_losses = []
 
     # reward is 1-dimensional tensor
     def add(self, reward):
         self.rewards.append(reward)
+
+    def add_loss(self, loss):
+        self.current_losses.append(loss.item())
+
+    def add_average_loss(self):
+        self.losses.append(np.mean(self.current_losses))
+
+    def save_losses(self, folder):
+        real_folder = "../losses/{}".format(folder)
+        Path(real_folder).mkdir(parents=True, exist_ok=True)
+
+        tb_writer = SummaryWriter(real_folder)
+        for i, loss in enumerate(self.losses):
+            tb_writer.add_scalar("loss", loss, i)
+
+        tb_writer.close()
+
 
     # rewards is a two-dimensional list
     def to_csv(self):

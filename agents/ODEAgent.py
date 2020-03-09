@@ -14,11 +14,16 @@ class ODEFunction(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(input_dim, neuron_number),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(neuron_number, neuron_number),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(neuron_number, input_dim)
         ).to(device).double()
+
+        for m in self.model.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, mean=0, std=0.1)
+                nn.init.constant_(m.bias, val=0)
 
     def forward(self, t, x: torch.Tensor):
         return self.model(x)
@@ -41,7 +46,10 @@ class ODEAgent(nn.Module):
                                     neuron_number=neuron_number,
                                     input_dim=input_dim)
 
-        self.last = nn.Linear(input_dim, output_dim).double()
+        self.last = nn.Sequential(
+            nn.Tanh(),
+            nn.Linear(input_dim, output_dim)
+        ).double()
 
     def forward(self, x: torch.Tensor):
         transformed = odeint(self.gradient, x, self.time)[1]

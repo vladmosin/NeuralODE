@@ -1,5 +1,6 @@
 import torch
 
+from agents.BlockODEAgent import BlockODEAgent
 from agents.CommonAgent import CommonAgent
 from agents.ODEAgent import ODEAgent
 from enums.AgentType import AgentType
@@ -15,7 +16,7 @@ class DQNConstants:
         self.batch_size = 64
         self.target_update = 5
         self.gamma = 0.999
-        self.agent_type = AgentType.ODE
+        self.agent_type = AgentType.BlockODE
         self.device = device
         self.env = env
 
@@ -33,6 +34,8 @@ class DQNConstants:
 
         if self.agent_type == AgentType.ODE:
             net = ODEAgent
+        elif self.agent_type == AgentType.BlockODE:
+            net = BlockODEAgent
         else:
             net = CommonAgent
 
@@ -72,3 +75,14 @@ class DQNConstants:
     # Should add if on different environments
     def get_reward_converter(self):
         return CartPoleConverter()
+
+    def __str__(self):
+        params = self.__dict__
+        str_params = []
+
+        interesting_params = ['lr', 'gamma', 'batch_size', 'memory_size', 'num_episodes'
+                                                                          '']
+        for param in interesting_params:
+            str_params.append('{}={}'.format(param, params[param]))
+
+        return "%".join(str_params)
