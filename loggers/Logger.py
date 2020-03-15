@@ -41,7 +41,7 @@ class Logger:
         self.losses.append(np.mean(self.current_losses))
 
     def save_losses(self, folder):
-        real_folder = "../losses/{}".format(folder)
+        real_folder = "losses/{}".format(folder)
         Path(real_folder).mkdir(parents=True, exist_ok=True)
 
         tb_writer = SummaryWriter(real_folder)
@@ -72,7 +72,7 @@ class Logger:
     # log type: csv or tensorboard
     def file_path(self, log_type):
         filename = "{}.csv".format(datetime.now().strftime('%Y-%m-%d_%H-%M'))
-        directory = "../data/{}/{}/{}/{}/{}/{}".format(
+        directory = "data/{}/{}/{}/{}/{}/{}".format(
             log_type, self.algorithm, self.agent_type,
             self.exploration, self.distance_type, self.distance)
 
