@@ -82,30 +82,29 @@ if __name__ == '__main__':
     action_space_dim = env.action_space.n
     state_space_dim = env.observation_space.shape[0]
 
-    dqn_config = DQNConstants(device=device, env=env)
-    policy_net, target_net, optimizer = dqn_config.get_models()
+    dqn_configs = DQNConstants(device=device, env=env).gen_configs_list()
+    for dqn_config in dqn_configs:
+        policy_net, target_net, optimizer = dqn_config.get_models()
 
-    memory = dqn_config.get_memory()
-    reward_converter = dqn_config.get_reward_converter()
+        memory = dqn_config.get_memory()
+        reward_converter = dqn_config.get_reward_converter()
 
-    action_selector = dqn_config.get_action_selector()
+        action_selector = dqn_config.get_action_selector()
 
-    tester = Tester(action_selector=action_selector,
-                    device=device,
-                    env=env,
-                    model=policy_net,
-                    test_episodes=TEST_EPISODES,
-                    algorithm='DQN',
-                    distance=20,
-                    distance_type=DistanceType.BY_EPISODE,
-                    first_test=1,
-                    agent_type=dqn_config.agent_type,
-                    exploration=Exploration.OFF)
+        tester = Tester(action_selector=action_selector,
+                        device=device,
+                        env=env,
+                        model=policy_net,
+                        test_episodes=TEST_EPISODES,
+                        algorithm='DQN',
+                        distance=20,
+                        distance_type=DistanceType.BY_EPISODE,
+                        first_test=1,
+                        agent_type=dqn_config.agent_type,
+                        exploration=Exploration.OFF)
 
-    logger = tester.create_csv_logger()
-    ticks_counter = tester.create_ticks_counter()
+        logger = tester.create_csv_logger(dqn_config)
+        ticks_counter = tester.create_ticks_counter()
 
-    train()
-    logger.to_csv()
-    logger.to_tensorboard()
-    logger.save_losses(str(dqn_config))
+        train()
+        logger.save_all()

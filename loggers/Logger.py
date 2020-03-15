@@ -5,28 +5,11 @@ from tensorboardX import SummaryWriter
 import torch
 import numpy as np
 
-"""
-Writes rewards to file located in data/
-Next folder is csv or tensorboard 
-Next folder is algorithm (DQN, DDPG, ...)
-Next folder is type of distance between to test measurements (Episode, OptimizeStep)
-Next folder is Exploration or Exploit 
-Next folder is distance between two measurements
-Last folder is a type of agent neural network (Common, NeuralODE, NeuralBlockODE)
-Filename is a date and time of experiment
-"""
-
-
 class Logger:
-    def __init__(self, algorithm, distance_type, exploration,
-                 agent_type, distance, start_distance=1):
+    def __init__(self, config, tester):
         self.rewards = []
-        self.algorithm = algorithm
-        self.distance_type = distance_type.value
-        self.distance = distance
-        self.start_distance = start_distance
-        self.agent_type = agent_type.value
-        self.exploration = exploration.value
+        self.config = config
+        self.tester = tester
         self.losses = []
         self.current_losses = []
 
@@ -40,9 +23,8 @@ class Logger:
     def add_average_loss(self):
         self.losses.append(np.mean(self.current_losses))
 
-    def save_losses(self, folder):
-        real_folder = "losses/{}".format(folder)
-        Path(real_folder).mkdir(parents=True, exist_ok=True)
+    def save_losses(self, directory):
+        real_folder = "{}".format(directory)
 
         tb_writer = SummaryWriter(real_folder)
         for i, loss in enumerate(self.losses):
@@ -50,38 +32,21 @@ class Logger:
 
         tb_writer.close()
 
-
     # rewards is a two-dimensional list
-    def to_csv(self):
-        distances, csv_rewards, indexes = [], [], []
-        current_distance = self.start_distance
-        directory, filename = self.file_path("csv")
+    def to_csv(self, directory):
+        csv_rewards, indexes = [], []
 
         for i, epoch_rewards in enumerate(self.rewards):
             csv_rewards += epoch_rewards
-            distances += [current_distance] * len(epoch_rewards)
             indexes += [i + 1] * len(epoch_rewards)
 
-            current_distance += self.distance
-
-        data = pd.DataFrame.from_dict({'reward': csv_rewards, 'distance': distances, 'index': indexes})
+        data = pd.DataFrame.from_dict({'reward': csv_rewards, 'index': indexes})
 
         Path(directory).mkdir(parents=True, exist_ok=True)
-        data.to_csv("{}/{}".format(directory, filename))
+        data.to_csv("{}/log.csv".format(directory))
 
-    # log type: csv or tensorboard
-    def file_path(self, log_type):
-        filename = "{}.csv".format(datetime.now().strftime('%Y-%m-%d_%H-%M'))
-        directory = "data/{}/{}/{}/{}/{}/{}".format(
-            log_type, self.algorithm, self.agent_type,
-            self.exploration, self.distance_type, self.distance)
-
-        return directory, filename
-
-    def to_tensorboard(self):
-        directory, filename = self.file_path("tensorboard")
-        experiment_directory = filename[:-4]  # remove extension
-        tb_writer = SummaryWriter("{}/{}".format(directory, experiment_directory))
+    def to_tensorboard(self, directory):
+        tb_writer = SummaryWriter("{}".format(directory))
 
         for i, reward in enumerate(self.rewards):
             reward = np.array(reward)
@@ -89,3 +54,19 @@ class Logger:
             tb_writer.add_scalar("std", reward.std(), i)
 
         tb_writer.close()
+
+    def save_config(self, directory):
+        f = open("{}/config.txt".format(directory), "w")
+        f.write(str(self.config))
+        f.write(str(self.tester))
+
+    def save_all(self):
+        cur_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        directory = "experiments/{}/{}".format(self.config.agent_type.value, cur_time)
+        Path(directory).mkdir(parents=True, exist_ok=True)
+
+        self.save_losses(directory)
+        self.to_tensorboard(directory)
+        self.to_csv(directory)
+        self.save_config(directory)
+

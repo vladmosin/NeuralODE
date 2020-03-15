@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 from agents.BlockODEAgent import BlockODEAgent
 from agents.CommonAgent import CommonAgent
@@ -10,22 +11,22 @@ from utils.RewardConverter import CartPoleConverter
 
 
 class DQNConstants:
-    def __init__(self, device, env):
+    def __init__(self, device, env, batch_size=64, lr=1e-3, neuron_number=64):
         self.num_episodes = 300
         self.test_episodes = 10
-        self.batch_size = 64
+        self.batch_size = batch_size
         self.target_update = 5
         self.gamma = 0.999
         self.agent_type = AgentType.BlockODE
         self.device = device
         self.env = env
 
-        self.neuron_number = 64
+        self.neuron_number = neuron_number
         self.start_eps = 0.9
         self.end_eps = 0.05
         self.eps_decay = 1000
         self.memory_size = 20000
-        self.lr = 1e-3
+        self.lr = lr
 
     # Should add if expression on AgentType
     def get_models(self):
@@ -78,11 +79,24 @@ class DQNConstants:
 
     def __str__(self):
         params = self.__dict__
-        str_params = []
+        str_params = ["DQN Config"]
 
-        interesting_params = ['lr', 'gamma', 'batch_size', 'memory_size', 'num_episodes'
-                                                                          '']
-        for param in interesting_params:
-            str_params.append('{}={}'.format(param, params[param]))
+        for param in params:
+            if param not in ["device", "env", "agent_type"]:
+                str_params.append('{}={}'.format(param, params[param]))
 
-        return "%".join(str_params)
+        return "\n".join(str_params)
+
+    def gen_configs_list(self):
+        # testing_params = ['batch_size', 'lr', 'neuron_number']
+        return [self.gen_config(i) for i in range(3 ** 3)]
+
+    def gen_config(self, code):
+        muls = (np.array([code // 9, (code % 9) // 3, code % 3]) + 1) / 2
+        batch_size = self.batch_size
+        neuron_number = self.neuron_number
+        lr = self.lr
+
+        return DQNConstants(device=self.device, env=self.env, batch_size=int(batch_size * muls[0]),
+                            neuron_number=int(neuron_number * muls[1]), lr=lr * muls[2])
+

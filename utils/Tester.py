@@ -28,13 +28,8 @@ class Tester:
         self.distance_type = distance_type
         self.first_test = first_test
 
-    def create_csv_logger(self):
-        return Logger(agent_type=self.agent_type,
-                      algorithm=self.algorithm,
-                      distance=self.distance,
-                      distance_type=self.distance_type,
-                      exploration=self.exploration,
-                      start_distance=self.first_test)
+    def create_csv_logger(self, config):
+        return Logger(config=config, tester=self)
 
     def create_ticks_counter(self):
         return TicksCounter(steps=self.distance,
@@ -59,6 +54,21 @@ class Tester:
 
             rewards.append(episode_reward)
 
-        print(rewards)
+        #print(rewards)
 
         return rewards
+
+    def __str__(self):
+        return """Test config
+                env={}
+                test_episodes={}
+                exploration={}
+                algorithm={}
+                agent_type={}
+                distance={}
+                distance_type={}
+        """.format(self.env.unwrapped.spec.id, self.device,
+                   self.test_episodes, self.exploration.value,
+                   self.algorithm, self.agent_type.value,
+                   self.distance, self.distance_type.value, self.first_test
+        )
