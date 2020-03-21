@@ -95,7 +95,7 @@ def train(gv: GlobalVariables):
 
 def runner(dqn_config):
     env = gym.make(env_name)
-    device = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     test_env = gym.make(env_name)
 
     policy_net, target_net, optimizer = dqn_config.get_models()
@@ -135,7 +135,7 @@ def runner(dqn_config):
 
 
 if __name__ == "__main__":
-    dev = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
+    dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     processes = []
     for dqn_config in DQNConstants(env=gym.make(env_name), device=dev).gen_configs_list():
         process = Process(target=runner, args=(dqn_config,))
