@@ -53,7 +53,7 @@ def optimize_model(gv):
     backprop(loss, gv.policy_net, gv.optimizer)
 
 
-def train(gv: GlobalVariables):
+def train(gv):
     for i in tqdm(range(gv.dqn_config.num_episodes)):
         episode_reward = 0
         state = to_tensor(gv.env.reset(), device=gv.device)
