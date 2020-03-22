@@ -36,7 +36,7 @@ class GlobalVariables:
         self.device = device
 
 
-def optimize_model(gv: GlobalVariables):
+def optimize_model(gv):
     if len(gv.memory) < gv.dqn_config.batch_size:
         return
 
