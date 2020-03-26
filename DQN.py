@@ -1,6 +1,7 @@
 from itertools import count
-from multiprocessing import Process
 
+import argparse
+import sys
 import gym
 import torch
 import torch.nn.functional as F
@@ -11,8 +12,6 @@ from enums.DistanceType import DistanceType
 from enums.Exploration import Exploration
 from utils.Tester import Tester
 from utils.Utils import backprop, to_tensor
-
-env_name = 'CartPole-v1'
 
 TEST_EPISODES = 10
 
@@ -93,7 +92,7 @@ def train(gv: GlobalVariables):
             gv.logger.add(gv.tester.test())
 
 
-def runner(dqn_config):
+def runner(dqn_config, env_name):
     env = gym.make(env_name)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     test_env = gym.make(env_name)
@@ -134,13 +133,36 @@ def runner(dqn_config):
     logger.save_all()
 
 
-if __name__ == "__main__":
-    dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    processes = []
-    for dqn_config in DQNConstants(env=gym.make(env_name), device=dev).gen_configs_list():
-        process = Process(target=runner, args=(dqn_config,))
-        process.start()
-        processes.append(process)
+def init_parser():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("--batch_size", type=int, default=64)
+    arg_parser.add_argument("--lr", type=float, default=1e-3)
+    arg_parser.add_argument("--neuron_number", type=int, default=64)
+    arg_parser.add_argument("--num_episodes", type=int, default=1000)
+    arg_parser.add_argument("--gamma", type=float, default=0.999)
+    arg_parser.add_argument("--memory_size", type=int, default=20000)
+    arg_parser.add_argument("--target_update", type=int, default=5)
+    arg_parser.add_argument("--eps_decay", type=int, default=1000)
+    arg_parser.add_argument("--env_name", default='CartPole-v1')
 
-    for process in processes:
-        process.join()
+    return arg_parser
+
+
+def create_dqn_config(args):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    env = gym.make(args.env_name)
+    return DQNConstants(
+        device=device, env=env,
+        batch_size=args.batch_size, lr=args.lr,
+        neuron_number=args.neuron_number, num_episodes=args.num_episodes,
+        gamma=args.gamma, memory_size=args.memory_size,
+        target_update=args.target_update, eps_decay=args.eps_decay
+    )
+
+
+if __name__ == "__main__":
+    parser = init_parser()
+    args = parser.parse_args(sys.argv[1:])
+    dqn_config = create_dqn_config(args)
+
+    runner(dqn_config, env_name=args.env_name)

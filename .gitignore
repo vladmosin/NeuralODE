@@ -4,3 +4,4 @@ data/*
 .idea/*
 losses/*
 experiments/*
+run/*

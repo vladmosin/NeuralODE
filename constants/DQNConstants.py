@@ -11,12 +11,15 @@ from utils.RewardConverter import CartPoleConverter
 
 
 class DQNConstants:
-    def __init__(self, device, env, batch_size=64, lr=1e-3, neuron_number=64):
-        self.num_episodes = 300
+    def __init__(self, device, env, batch_size=64, lr=1e-3,
+                 neuron_number=64, num_episodes=1000,
+                 gamma=0.999, memory_size=20000,
+                 target_update=5, eps_decay=1000):
+        self.num_episodes = num_episodes
         self.test_episodes = 10
         self.batch_size = batch_size
-        self.target_update = 5
-        self.gamma = 0.999
+        self.target_update = target_update
+        self.gamma = gamma
         self.agent_type = AgentType.BlockODE
         self.device = device
         self.env = env
@@ -24,8 +27,8 @@ class DQNConstants:
         self.neuron_number = neuron_number
         self.start_eps = 0.9
         self.end_eps = 0.05
-        self.eps_decay = 1000
-        self.memory_size = 20000
+        self.eps_decay = eps_decay
+        self.memory_size = memory_size
         self.lr = lr
 
     # Should add if expression on AgentType
