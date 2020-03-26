@@ -30,7 +30,7 @@ def gen_run_script(line, index):
     f = open("run/run{}.sh".format(index + 1), "w")
     f.write("#!/bin/bash\n\n")
     f.write("module add singularity hpcx/hpcx-cuda-ompi\n")
-    f.write("singularity exec container.sif python NeuralODE/DQN.py " + line)
+    f.write("singularity exec container.sif python DQN.py " + line)
     f.close()
 
 
