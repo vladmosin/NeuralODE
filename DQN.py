@@ -35,7 +35,7 @@ class GlobalVariables:
         self.device = device
 
 
-def optimize_model(gv: GlobalVariables):
+def optimize_model(gv):
     if len(gv.memory) < gv.dqn_config.batch_size:
         return
 
@@ -52,7 +52,7 @@ def optimize_model(gv: GlobalVariables):
     backprop(loss, gv.policy_net, gv.optimizer)
 
 
-def train(gv: GlobalVariables):
+def train(gv):
     for i in tqdm(range(gv.dqn_config.num_episodes)):
         episode_reward = 0
         state = to_tensor(gv.env.reset(), device=gv.device)
