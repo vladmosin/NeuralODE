@@ -59,17 +59,12 @@ class Tester:
         return rewards
 
     def __str__(self):
-        return """\nTest config
-                env={}
-                test_episodes={}
-                exploration={}
-                algorithm={}
-                agent_type={}
-                distance={}
-                distance_type={}
-                first_test={}
-        """.format(self.env.unwrapped.spec.id,
-                   self.test_episodes, self.exploration.value,
-                   self.algorithm, self.agent_type.value,
-                   self.distance, self.distance_type.value, self.first_test
-        )
+        return "\nTest config\n" + \
+                "env={}\n".format(self.env.unwrapped.spec.id) + \
+                "test_episodes={}\n".format(self.test_episodes) + \
+                "exploration={}\n".format(self.exploration.value) + \
+                "algorithm={}\n".format(self.algorithm) + \
+                "agent_type={}\n".format(self.agent_type.value) + \
+                "distance={}\n".format(self.distance) + \
+                "distance_type={}\n".format(self.distance_type.value) + \
+                "first_test={}\n".format(self.first_test)
