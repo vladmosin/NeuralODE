@@ -1,3 +1,3 @@
 #!/bin/bash
 
-for SCRIPT in $"ls run"; do sbatch $SCRIPT; done
+for SCRIPT in $(ls NeuralODE/run); do sbatch NeuralODE/run/$SCRIPT; done
