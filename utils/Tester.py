@@ -59,7 +59,7 @@ class Tester:
         return rewards
 
     def __str__(self):
-        return """Test config
+        return """\nTest config
                 env={}
                 test_episodes={}
                 exploration={}
@@ -67,7 +67,8 @@ class Tester:
                 agent_type={}
                 distance={}
                 distance_type={}
-        """.format(self.env.unwrapped.spec.id, self.device,
+                first_test={}
+        """.format(self.env.unwrapped.spec.id,
                    self.test_episodes, self.exploration.value,
                    self.algorithm, self.agent_type.value,
                    self.distance, self.distance_type.value, self.first_test
