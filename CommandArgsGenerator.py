@@ -1,5 +1,7 @@
 from pathlib import Path
 
+TASKS_PER_RUN = 24
+
 
 def generate_configs(repetitions=4):
     f = open("settup", "r")
@@ -21,16 +23,24 @@ def generate_configs(repetitions=4):
             lines.append(line)
         indexes = next_elem(indexes, lengths)
 
-    for i, line in enumerate(lines):
-        gen_run_script(line, i)
+    batch_number = (len(lines) + TASKS_PER_RUN - 1) // TASKS_PER_RUN
+    for i in range(batch_number):
+        gen_run_script(lines, i)
 
 
-def gen_run_script(line, index):
+def gen_run_script(lines, batch_index):
     Path("run").mkdir(parents=True, exist_ok=True)
-    f = open("run/run{}.sh".format(index + 1), "w")
+    Path("arguments").mkdir(parents=True, exist_ok=True)
+    filename = "arguments/{}".format(batch_index + 1)
+    f = open(filename, "w")
+    for line in lines[batch_index * TASKS_PER_RUN:(batch_index + 1) * TASKS_PER_RUN]:
+        f.write(line + "\n")
+    f.close()
+
+    f = open("run/run{}.sh".format(batch_index + 1), "w")
     f.write("#!/bin/bash\n\n")
     f.write("module add singularity hpcx/hpcx-cuda-ompi\n")
-    f.write("singularity exec container.sif python NeuralODE/DQN.py " + line)
+    f.write("singularity exec container.sif python NeuralODE/DQN.py --path NeuralODE/" + filename)
     f.close()
 
 

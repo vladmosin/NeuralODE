@@ -13,6 +13,8 @@ from enums.Exploration import Exploration
 from utils.Tester import Tester
 from utils.Utils import backprop, to_tensor
 
+from multiprocessing import Process
+
 TEST_EPISODES = 10
 
 
@@ -160,9 +162,29 @@ def create_dqn_config(args):
     )
 
 
-if __name__ == "__main__":
-    parser = init_parser()
-    args = parser.parse_args(sys.argv[1:])
-    dqn_config = create_dqn_config(args)
+def parse_sys_args(sys_args):
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("--path", default="arguments")
 
-    runner(dqn_config, env_name=args.env_name)
+    args = arg_parser.parse_args(sys_args)
+    return args.path
+
+
+if __name__ == "__main__":
+    path = parse_sys_args(sys.argv[1:])
+    f = open(path, "r")
+    arguments = f.readlines()
+    parser = init_parser()
+
+    processes = []
+
+    for line in arguments:
+        args = parser.parse_args(line)
+        dqn_config = create_dqn_config(args)
+
+        process = Process(target=runner, args=(dqn_config, args.env_name))
+        process.start()
+        processes.append(process)
+
+    for process in processes:
+        process.join()
