@@ -1,6 +1,6 @@
 from pathlib import Path
 
-TASKS_PER_RUN = 24
+TASKS_PER_RUN = 4
 
 
 def generate_configs(repetitions=4):
