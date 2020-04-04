@@ -164,7 +164,7 @@ def create_dqn_config(args):
 
 def parse_sys_args(sys_args):
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--path", default="arguments")
+    arg_parser.add_argument("--path", default="arguments/1")
 
     args = arg_parser.parse_args(sys_args)
     return args.path
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     processes = []
 
     for line in arguments:
-        args = parser.parse_args(line)
+        args = parser.parse_args(line.split())
         dqn_config = create_dqn_config(args)
 
         process = Process(target=runner, args=(dqn_config, args.env_name))
