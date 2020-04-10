@@ -1,6 +1,9 @@
 import argparse
 import sys
+from datetime import datetime
 from os import listdir
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 import plotly
@@ -39,12 +42,10 @@ def config_from_string(line):
 
 
 def draw_graph(str_configs, path_to_csv, on_one_plot=6, cols=2):
-    colors = ["red", "green", "blue", "yellow", "orange", "beige", "brown", "silver", "fuchsia"]
     n = len(str_configs)
-    rows = n // (cols * on_one_plot)
+    rows = max(n // (cols * on_one_plot), 1)
     figs = [[go.Figure() for _ in range(cols)] for _ in range(rows)]
     row, col = 0, 0
-    color_ind = 0
     for str_config in str_configs:
         num_episodes = get_num_episodes(str_config)
         rewards = get_rewards(str_config, path_to_csv)
@@ -57,11 +58,14 @@ def draw_graph(str_configs, path_to_csv, on_one_plot=6, cols=2):
 
 def save_figures(figs):
     i = 1
-    dashboard = open("graphics/DASHBOARD.html", 'w')
+    directory = "graphics/experiment{}".format(datetime.now().strftime('%Y-%m-%d_%H-%M'))
+    Path(directory).mkdir(parents=True, exist_ok=True)
+
+    dashboard = open(f"{directory}/DASHBOARD.html", 'w')
     dashboard.write("<html><head></head><body>" + "\n")
     for row_figs in figs:
         for fig in row_figs:
-            plotly.offline.plot(fig, filename="graphics/Chart_{}.html".format(i), auto_open=False)
+            plotly.offline.plot(fig, filename=f"{directory}/Chart_{i}.html", auto_open=False)
             dashboard.write(
                 "  <object data=\"Chart_{}.html\" width=\"1200\" height=\"500\"></object>".format(i) + "\n"
             )

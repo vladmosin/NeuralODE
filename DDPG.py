@@ -34,8 +34,8 @@ def optimize_model():
     critic_loss = mse_loss(current_profit, expected_profit)
     soft_update_backprop(critic_loss, critic, critic_optimizer, ddpg_config.tau)
 
-    #actor_loss = - critic(torch.cat([states, actor(states)], dim=1)).mean()
-    #soft_update_backprop(actor_loss, actor, actor_optimizer, ddpg_config.tau)
+    actor_loss = - critic(torch.cat([states, actor(states)], dim=1)).mean()
+    soft_update_backprop(actor_loss, actor, actor_optimizer, ddpg_config.tau)
 
 
 def train():
