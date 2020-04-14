@@ -16,7 +16,7 @@ env = gym.make('MountainCarContinuous-v0')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-TEST_EPISODES = 10
+TEST_EPISODES = 3
 
 
 def optimize_model():
@@ -24,18 +24,20 @@ def optimize_model():
         return
 
     states, actions, next_states, rewards, not_dones = memory.sample(ddpg_config.batch_size)
+    states = states.detach()
+    actions = actions.detach()
 
-    expected_profit = critic.target(torch.cat([next_states, actor.target(next_states)], dim=1))
+    expected_profit = target_critic(next_states, target_actor(next_states))
     expected_profit = (rewards + not_dones.double() * ddpg_config.gamma * expected_profit)
     expected_profit = expected_profit.detach()
 
-    current_profit = critic(torch.cat([states, actions], dim=1))
+    current_profit = critic(states, actions)
 
     critic_loss = mse_loss(current_profit, expected_profit)
-    soft_update_backprop(critic_loss, critic, critic_optimizer, ddpg_config.tau)
+    soft_update_backprop(critic_loss, (critic, target_critic), critic_optimizer, ddpg_config.tau)
 
-    actor_loss = - critic(torch.cat([states, actor(states)], dim=1)).mean()
-    soft_update_backprop(actor_loss, actor, actor_optimizer, ddpg_config.tau)
+    actor_loss = - critic(states, actor(states)).mean()
+    soft_update_backprop(actor_loss, (actor, target_actor), actor_optimizer, ddpg_config.tau)
 
 
 def train():
@@ -61,7 +63,7 @@ def train():
             ticks_counter.step(DistanceType.BY_OPTIMIZER_STEP)
             if ticks_counter.test_time():
                 ticks_counter.reset()
-                logger.add(tester.test())
+                #logger.add(tester.test())
 
             if done:
                 break
@@ -69,13 +71,14 @@ def train():
         ticks_counter.step(DistanceType.BY_EPISODE)
         if ticks_counter.test_time():
             ticks_counter.reset()
-            logger.add(tester.test())
+            #logger.add(tester.test())
+        print(episode_reward)
 
 
 if __name__ == '__main__':
     ddpg_config = DDPGConstants(device=device, env=env)
 
-    actor, critic, actor_optimizer, critic_optimizer = ddpg_config.get_models()
+    actor, critic, target_actor, target_critic, actor_optimizer, critic_optimizer = ddpg_config.get_models()
     action_selector = ddpg_config.get_action_selector()
     reward_converter = ddpg_config.get_reward_converter()
     memory = ddpg_config.get_memory()
@@ -92,9 +95,8 @@ if __name__ == '__main__':
                     agent_type=ddpg_config.agent_type,
                     exploration=Exploration.OFF)
 
-    logger = tester.create_csv_logger()
+    #logger = tester.create_csv_logger()
     ticks_counter = tester.create_ticks_counter()
-
     train()
-    logger.to_csv()
-    logger.to_tensorboard()
+    #logger.to_csv()
+    #logger.to_tensorboard()

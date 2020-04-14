@@ -54,7 +54,7 @@ class Tester:
 
             rewards.append(episode_reward)
 
-        #print(rewards)
+        print(rewards)
 
         return rewards
 

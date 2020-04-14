@@ -1,6 +1,4 @@
-from torch import nn
 from random import shuffle
-
 from utils.Utils import dense_net
 
 

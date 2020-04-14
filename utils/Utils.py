@@ -12,10 +12,11 @@ def backprop(loss: torch.Tensor, model: torch.nn.Module, optimizer):
     optimizer.step()
 
 
-def soft_update_backprop(loss: torch.Tensor, model: torch.nn.Module, optimizer, tau):
-    backprop(loss, model, optimizer)
+def soft_update_backprop(loss: torch.Tensor, model, optimizer, tau):
+    net, target_net = model
+    backprop(loss, net, optimizer)
 
-    for target_param, param in zip(model.target.parameters(), model.parameters()):
+    for target_param, param in zip(target_net.parameters(), net.parameters()):
         target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
 
 

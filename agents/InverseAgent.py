@@ -4,6 +4,7 @@ from constants.InverseAgentConfig import InverseAgentConfig, ValueBlockConfig, S
 from torch import nn
 import torch
 import torch.nn.functional as F
+from torch.distributions import Normal
 
 
 class ValueBlock(nn.Module):
@@ -64,8 +65,9 @@ class InverseNet(nn.Module):
         return self.gradient_net.inverse(action=action, state=state)
 
 
-class InverseAgent:
-    def __init__(self, config: InverseAgentConfig):
+class InverseAgent(nn.Module):
+    def __init__(self, config: InverseAgentConfig, env):
+        super(InverseAgent, self).__init__()
         inverse_blocks = config.create_inverse_blocks()
 
         self.inverse_net = InverseNet(inverse_blocks, config.inverse_block_config.state_dim, device=config.device)
@@ -73,11 +75,26 @@ class InverseAgent:
         self.state_transformation_block = StateTransformationBlock(
             config.state_transformation_config).to(device=config.device)
         self.last_layer = nn.Linear(in_features=config.inverse_block_config.action_dim, out_features=1)
+        self.normal_distribution_dim = 0
+        self.action_dim = 0
+        self.random = Normal(torch.tensor([0]), torch.tensor([1]))
+        self.env = env
+        self.normal_distribution_dim = config.normal_distribution_dim
+        self.action_dim = config.action_dim
 
     def forward(self, state, action):
+        rand = self.random.sample((action.shape[0], self.normal_distribution_dim))
+        action = torch.cat([action, rand], dim=1)
         state = self.state_transformation_block(state)
         advantage = self.inverse_net(state=state, action=action)
         advantage = self.last_layer(F.relu(advantage))
         value = self.value_block(state)
 
         return value, advantage
+
+    def find_best_action(self, states):
+        zeroes = torch.zeros((states.shape[0], self.action_dim + self.normal_distribution_dim))
+        low = torch.tensor(self.env.action_space.low[0])
+        high = torch.tensor(self.env.action_space.high[0])
+        with torch.no_grad:
+            return self.inverse_net.inverse_grad(states, zeroes).clamp(low, high)[:, :self.action_dim]
