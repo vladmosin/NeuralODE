@@ -9,11 +9,12 @@ class InverseBlock(nn.Module):
     def __init__(self, inverse_config: InverseBlockConfig):
         super(InverseBlock, self).__init__()
 
-        self.sblock = SBlock(inverse_config.sblock_config)
-        self.tblock = TBlock(inverse_config.tblock_config)
+        self.sblock = SBlock(inverse_config.sblock_config).double()
+        self.tblock = TBlock(inverse_config.tblock_config).double()
         self.mask = inverse_config.create_mask()
         self.reversed_mask = [not e for e in self.mask]
         self.inverse_config = inverse_config
+        self.device = inverse_config.device
 
     def forward(self, action, state):
         not_trained_action_part = action[:, self.mask]
@@ -26,7 +27,7 @@ class InverseBlock(nn.Module):
 
     def inverse(self, action, state):
         trained_dim = self.inverse_config.action_dim - self.inverse_config.not_trained_action
-        res = torch.zeros(action.shape)
+        res = torch.zeros(action.shape, dtype=torch.float64)
         trained_action_part = action[:, :trained_dim]
         not_trained_action_part = action[:, trained_dim:]
 

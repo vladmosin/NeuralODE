@@ -24,13 +24,21 @@ def to_tensor(x, device):
     return torch.tensor([x], device=device, dtype=torch.float64)
 
 
-def dense_net(input_dim, output_dim, neuron_number, block_num):
+def dense_net(input_dim, output_dim, neuron_number, block_num, device):
     if block_num == 1:
-        return nn.Linear(in_features=input_dim, out_features=output_dim)
+        return nn.Linear(in_features=input_dim, out_features=output_dim).to(
+            device=device, dtype=torch.float64
+        )
 
-    blocks = [nn.Linear(in_features=input_dim, out_features=neuron_number)]
+    blocks = [nn.Linear(in_features=input_dim, out_features=neuron_number).to(
+            device=device, dtype=torch.float64
+        )]
     for _ in range(1, block_num):
-        blocks.append(nn.Linear(in_features=neuron_number, out_features=neuron_number))
+        blocks.append(nn.Linear(in_features=neuron_number, out_features=neuron_number).to(
+            device=device, dtype=torch.float64
+        ))
 
-    blocks.append(nn.Linear(in_features=neuron_number, out_features=output_dim))
+    blocks.append(nn.Linear(in_features=neuron_number, out_features=output_dim).to(
+            device=device, dtype=torch.float64
+        ))
     return blocks

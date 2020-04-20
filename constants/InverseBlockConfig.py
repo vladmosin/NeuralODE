@@ -3,34 +3,39 @@ from utils.Utils import dense_net
 
 
 class SBlockConfig:
-    def __init__(self, input_dim, output_dim, neuron_number, block_num):
+    def __init__(self, input_dim, output_dim, neuron_number, block_num, device):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.neuron_number = neuron_number
         self.block_num = block_num
+        self.device = device
 
     def create(self):
         return dense_net(input_dim=self.input_dim, output_dim=self.output_dim,
-                         neuron_number=self.neuron_number, block_num=self.block_num)
+                         neuron_number=self.neuron_number, block_num=self.block_num,
+                         device=self.device)
 
 
 class TBlockConfig:
-    def __init__(self, input_dim, output_dim, neuron_number, block_num):
+    def __init__(self, input_dim, output_dim, neuron_number, block_num, device):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.neuron_number = neuron_number
         self.block_num = block_num
+        self.device = device
 
     def create(self):
         return dense_net(input_dim=self.input_dim, output_dim=self.output_dim,
-                         neuron_number=self.neuron_number, block_num=self.block_num)
+                         neuron_number=self.neuron_number, block_num=self.block_num,
+                         device=self.device)
 
 
 class InverseBlockConfig:
     def __init__(self, sblock_config: SBlockConfig, tblock_config: TBlockConfig,
-                 action_dim, state_dim, not_trained_action):
+                 action_dim, state_dim, not_trained_action, device):
         self.sblock_config = sblock_config
         self.tblock_config = tblock_config
+        self.device = device
 
         self.action_dim = action_dim
         self.state_dim = state_dim

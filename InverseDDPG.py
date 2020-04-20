@@ -43,13 +43,12 @@ def optimize_model(gv: GlobalVariables):
         return
 
     states, actions, next_states, rewards, not_done = gv.memory.sample(gv.config.batch_size)
-    not_done = not_done.view(-1)
 
-    expected_profit = gv.target_net(states=next_states, actions=gv.target_net.find_best_action(states))
+    expected_profit = gv.target_net(state=next_states, action=gv.target_net.find_best_action(states))
     expected_profit = (rewards + not_done.double() * gv.config.gamma * expected_profit)
     expected_profit = expected_profit.detach()
 
-    profit = gv.net(states=states, actions=gv.net.find_best_action())
+    profit = gv.net(state=states, action=gv.net.find_best_action(states))
 
     loss = F.mse_loss(profit, expected_profit)
     soft_update_backprop(loss, (gv.net, gv.target_net), gv.optimizer, gv.config.tau)
@@ -94,7 +93,7 @@ def train(gv: GlobalVariables):
 
 def runner(config: InverseDDPGConstants, env_name):
     env = gym.make(env_name)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu')
     test_env = gym.make(env_name)
 
     net, target_net, optimizer = config.get_models()
@@ -169,7 +168,7 @@ def parse_sys_args(sys_args):
 
 if __name__ == "__main__":
     env = gym.make('MountainCarContinuous-v0')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu')
     config = InverseDDPGConstants(env=env, device=device)
 
     runner(config=config, env_name='MountainCarContinuous-v0')

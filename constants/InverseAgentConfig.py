@@ -4,26 +4,30 @@ from utils.Utils import dense_net
 
 
 class ValueBlockConfig:
-    def __init__(self, input_dim, neuron_number, block_num):
+    def __init__(self, input_dim, neuron_number, block_num, device):
         self.input_dim = input_dim
         self.neuron_number = neuron_number
         self.block_num = block_num
+        self.device = device
 
     def create(self):
         return dense_net(input_dim=self.input_dim, output_dim=1,
-                         neuron_number=self.neuron_number, block_num=self.block_num)
+                         neuron_number=self.neuron_number, block_num=self.block_num,
+                         device=self.device)
 
 
 class StateTransformationBlockConfig:
-    def __init__(self, input_dim, output_dim, neuron_number, block_num):
+    def __init__(self, input_dim, output_dim, neuron_number, block_num, device):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.neuron_number = neuron_number
         self.block_num = block_num
+        self.device = device
 
     def create(self):
         return dense_net(input_dim=self.input_dim, output_dim=self.output_dim,
-                         neuron_number=self.neuron_number, block_num=self.block_num)
+                         neuron_number=self.neuron_number, block_num=self.block_num,
+                         device=self.device)
 
 
 class InverseAgentConfig:
@@ -41,6 +45,5 @@ class InverseAgentConfig:
         self.action_dim = action_dim
         self.normal_distribution_dim = normal_distribution_dim
 
-
     def create_inverse_blocks(self):
-        return [InverseBlock(self.inverse_block_config) for _ in range(self.inverse_block_number)]
+        return [InverseBlock(self.inverse_block_config).to(device=self.device).double() for _ in range(self.inverse_block_number)]
