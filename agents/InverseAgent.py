@@ -56,7 +56,7 @@ class InverseNet(nn.Module):
 
     def forward(self, state, action):
         self.gradient_net.state = state
-        return odeint(self.gradient_net, action, self.times)[1]
+        return odeint(self.gradient_net, action, self.times, method="euler")[1]
 
     def inverse_grad(self, state, action):
         return self.gradient_net.inverse(action=action, state=state)

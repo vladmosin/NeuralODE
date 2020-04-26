@@ -33,7 +33,7 @@ class InverseDDPGConstants:
         self.eps_decay = 1000
         self.neuron_number = 128
         self.memory_size = 20000
-        self.lr = 1e-5
+        self.lr = 1e-3
         self.batch_size = 64
 
         self.state_space_dim = self.env.observation_space.shape[0]
