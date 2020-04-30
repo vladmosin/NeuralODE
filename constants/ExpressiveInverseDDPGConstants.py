@@ -8,7 +8,7 @@ from agents.CommonAgent import CommonAgent
 from agents.ExpressiveInverseAgent import ExpressiveInverseAgent
 from constants.ExpressiveInverseConfig import ExpressiveInverseConfig
 from enums.AgentType import AgentType
-from utils.ActionSelector import NoisedSelector
+from utils.ActionSelector import NoisedSelector, InverseNoisedSelector
 from utils.MemoryReplay import MemoryReplay
 from utils.RewardConverter import MountainCarConverter
 
@@ -43,11 +43,11 @@ class ExpressiveInverseDDPGConstants:
         return model, target_model, optimizer
 
     def get_action_selector(self):
-        return NoisedSelector(action_space=self.env.action_space,
-                              device=self.device,
-                              end_eps=self.end_eps,
-                              start_eps=self.start_eps,
-                              eps_decay=self.eps_decay)
+        return InverseNoisedSelector(action_space=self.env.action_space,
+                                     device=self.device,
+                                     end_eps=self.end_eps,
+                                     start_eps=self.start_eps,
+                                     eps_decay=self.eps_decay)
 
     def get_reward_converter(self):
         return MountainCarConverter()

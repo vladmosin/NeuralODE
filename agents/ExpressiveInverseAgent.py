@@ -14,15 +14,15 @@ class ExpressiveInverseAgent(nn.Module):
             nn.Linear(config.state_dim, config.transformed_state),
             nn.LayerNorm(config.transformed_state),
             nn.ReLU()
-        ).to(device=device)
+        ).to(device=device).double()
 
         self.action_dim = config.action_dim
         self.device = device
 
-        self.relu = LeakyReluIM().to(device=device)
+        self.relu = LeakyReluIM().to(device=device).double()
         self.inverse_net = ExpressiveInverseBlock(action_dim=config.action_dim, device=device,
-                                                  state_dim=config.state_dim, t=config.t).double()
-        self.last_layer = nn.Linear(config.action_dim, 1).to(device=device)
+                                                  state_dim=config.transformed_state, t=config.t).double()
+        self.last_layer = nn.Linear(config.action_dim, 1).to(device=device).double()
 
     def forward(self, state, action):
         state = self.state_transform(state)
@@ -31,7 +31,7 @@ class ExpressiveInverseAgent(nn.Module):
 
     def best_action(self, state):
         state = self.state_transform(state)
-        return self.inverse_net.inverse(state)
+        return self.inverse_net.best_action(state)
 
 
 class ExpressiveInverseBlock(nn.Module):
@@ -40,13 +40,13 @@ class ExpressiveInverseBlock(nn.Module):
         self.times = torch.tensor([0, t], dtype=torch.double, device=device)
         self.device = device
         self.action_dim = action_dim
-        self.grad = ExpressiveGradient(action_dim=action_dim, state_dim=state_dim, device=device)
+        self.grad = ExpressiveGradient(action_dim=action_dim, state_dim=state_dim, device=device).double()
 
     def forward(self, state, action):
         return odeint(self.model, torch.cat([action, state]), self.times, method="euler")[1]
 
     def best_action(self, state):
-        action = torch.zeros((state.shape[0], self.action_dim))
+        action = torch.zeros((state.shape[0], self.action_dim)).to(device=self.device, dtype=torch.double)
         return self.grad.inverse(state=state, action=action)
 
 
