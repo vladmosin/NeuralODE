@@ -1,9 +1,11 @@
 from pathlib import Path
+import shutil
 
-TASKS_PER_RUN = 4
+TASKS_PER_RUN = 22
 
 
-def generate_configs(repetitions=4):
+def generate_configs(repetitions=8):
+    shutil.rmtree('arguments')
     f = open("settup", "r")
     names, values, lengths = [], [], []
     for line in f.readlines():
