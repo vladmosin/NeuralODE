@@ -14,7 +14,7 @@ class DQNConstants:
     def __init__(self, device, env, batch_size=64, lr=1e-3,
                  neuron_number=64, num_episodes=1000,
                  gamma=0.999, memory_size=20000,
-                 target_update=5, eps_decay=1000):
+                 target_update=5, eps_decay=1000, t=1.0):
         self.num_episodes = num_episodes
         self.test_episodes = 10
         self.batch_size = batch_size
@@ -30,6 +30,7 @@ class DQNConstants:
         self.eps_decay = eps_decay
         self.memory_size = memory_size
         self.lr = lr
+        self.t = t
 
     # Should add if expression on AgentType
     def get_models(self):
@@ -47,14 +48,16 @@ class DQNConstants:
             device=self.device,
             neuron_number=self.neuron_number,
             input_dim=state_space_dim,
-            output_dim=action_space_dim
+            output_dim=action_space_dim,
+            t=self.t
         )
 
         target_net = net(
             device=self.device,
             neuron_number=self.neuron_number,
             input_dim=state_space_dim,
-            output_dim=action_space_dim
+            output_dim=action_space_dim,
+            t=self.t
         )
 
         target_net.load_state_dict(policy_net.state_dict())

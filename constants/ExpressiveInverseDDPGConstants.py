@@ -26,8 +26,8 @@ class ExpressiveInverseDDPGConstants:
         self.eps_decay = 1000
         self.transformed_state_dim = 400
         self.memory_size = 20000
-        self.critic_lr = 1e-4
-        self.batch_size = 256
+        self.lr = 1e-5
+        self.batch_size = 64
         self.t = 1.0
 
         self.expressive_config = ExpressiveInverseConfig(
@@ -36,7 +36,7 @@ class ExpressiveInverseDDPGConstants:
 
     def get_models(self):
         model = ExpressiveInverseAgent(config=self.expressive_config, device=self.device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=self.critic_lr)
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
 
         target_model = copy.deepcopy(model)
 

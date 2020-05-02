@@ -7,8 +7,9 @@ from torch import nn
 def backprop(loss: torch.Tensor, model: torch.nn.Module, optimizer):
     optimizer.zero_grad()
     loss.backward()
-    for i, param in enumerate(model.parameters()):
-        param.grad.data.clamp_(-1, 1)
+#    for i, param in enumerate(model.parameters()):
+#        print(param.shape)
+#        param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
 
@@ -21,7 +22,7 @@ def soft_update_backprop(loss: torch.Tensor, model, optimizer, tau):
 
 
 def to_tensor(x, device):
-    return torch.tensor([x], device=device, dtype=torch.float64)
+    return torch.tensor([x], device=device, dtype=torch.float32)
 
 
 def dense_net(input_dim, output_dim, neuron_number, block_num, device):
@@ -42,3 +43,7 @@ def dense_net(input_dim, output_dim, neuron_number, block_num, device):
             device=device, dtype=torch.float64
         ))
     return blocks
+
+
+def to_numpy(x):
+    return x.cpu().detach().numpy()

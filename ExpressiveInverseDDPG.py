@@ -25,11 +25,9 @@ def optimize_model():
         return
 
     states, actions, next_states, rewards, not_dones = memory.sample(ei_ddpg_config.batch_size)
-    states = states.detach()
-    actions = actions.detach()
 
     expected_profit = target_model(state=next_states, action=target_model.best_action(next_states))
-    expected_profit = (rewards + not_dones.double() * ei_ddpg_config.gamma * expected_profit)
+    expected_profit = (rewards + not_dones.float() * ei_ddpg_config.gamma * expected_profit)
     expected_profit = expected_profit.detach()
 
     current_profit = model(states, actions)

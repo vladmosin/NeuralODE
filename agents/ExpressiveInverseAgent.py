@@ -14,15 +14,15 @@ class ExpressiveInverseAgent(nn.Module):
             nn.Linear(config.state_dim, config.transformed_state),
             nn.LayerNorm(config.transformed_state),
             nn.ReLU()
-        ).to(device=device).double()
+        ).to(device=device)
 
         self.action_dim = config.action_dim
         self.device = device
 
-        self.relu = LeakyReluIM().to(device=device).double()
+        self.relu = LeakyReluIM().to(device=device)
         self.inverse_net = ExpressiveInverseBlock(action_dim=config.action_dim, device=device,
-                                                  state_dim=config.transformed_state, t=config.t).double()
-        self.last_layer = nn.Linear(config.action_dim, 1).to(device=device).double()
+                                                  state_dim=config.transformed_state, t=config.t)
+        self.last_layer = nn.Linear(config.action_dim, 1).to(device=device)
 
     def forward(self, state, action):
         state = self.state_transform(state)
@@ -37,16 +37,17 @@ class ExpressiveInverseAgent(nn.Module):
 class ExpressiveInverseBlock(nn.Module):
     def __init__(self, action_dim, state_dim, t, device):
         super(ExpressiveInverseBlock, self).__init__()
-        self.times = torch.tensor([0, t], dtype=torch.double, device=device)
+        self.times = torch.tensor([0, t], device=device)
         self.device = device
         self.action_dim = action_dim
-        self.grad = ExpressiveGradient(action_dim=action_dim, state_dim=state_dim, device=device).double()
+        self.grad = ExpressiveGradient(action_dim=action_dim, state_dim=state_dim, device=device)
 
     def forward(self, state, action):
-        return odeint(self.model, torch.cat([action, state]), self.times, method="euler")[1]
+        self.grad.set_state(state)
+        return odeint(self.grad, action, self.times, method="euler")[1]
 
     def best_action(self, state):
-        action = torch.zeros((state.shape[0], self.action_dim)).to(device=self.device, dtype=torch.double)
+        action = torch.zeros((state.shape[0], self.action_dim)).to(device=self.device)
         return self.grad.inverse(state=state, action=action)
 
 
@@ -58,18 +59,20 @@ class ExpressiveGradient(nn.Module):
             nn.Linear(state_dim, action_dim),
             nn.LayerNorm(action_dim),
             nn.ReLU()
-        ).double().to(device=device)
+        ).to(device=device)
 
         self.action_dim = action_dim
         self.relu = LeakyReluIM()
 
-        self.action_layer = LinearInvertibleModule(action_dim).to(device=device).double()
+        self.action_layer = LinearInvertibleModule(action_dim).to(device=device)
+        self.transformed_state = None
 
-    def forward(self, t, x):
-        action = x[:, :self.action_dim]
-        state = x[:, self.action_dim:]
+    def forward(self, t, action):
+        assert action.shape[0] == self.transformed_state.shape[0]
+        return self.relu(self.action_layer(action)) + self.transformed_state
 
-        return self.state_transform(state) + self.relu(self.action_layer(action))
+    def set_state(self, state):
+        self.transformed_state = self.state_transform(state)
 
     def inverse(self, state, action):
         state = self.state_transform(state)

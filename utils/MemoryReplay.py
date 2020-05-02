@@ -2,14 +2,16 @@ import numpy as np
 from torch import tensor
 import torch
 
+from utils.Utils import to_numpy
+
 
 class Transition:
     def __init__(self, device, state, action, next_state, reward, done):
-        self.state = state
-        self.action = action
-        self.next_state = next_state
-        self.reward = torch.tensor([[reward]], device=device, dtype=torch.float64)
-        self.not_done = torch.tensor([[not done]], device=device)
+        self.state = to_numpy(state).reshape(-1)
+        self.action = to_numpy(action).reshape(-1)
+        self.next_state = to_numpy(next_state).reshape(-1)
+        self.reward = np.array([reward], dtype=np.float32)
+        self.not_done = np.array([not done])
 
     def get(self, i):
         return [self.state, self.action, self.next_state, self.reward, self.not_done][i]
@@ -35,7 +37,8 @@ class MemoryReplay:
     def sample(self, batch_size):
         batch = np.random.choice(self.memory, batch_size)
 
-        return [torch.cat([trans.get(i) for trans in batch]) for i in range(5)]
+        return [torch.cat([torch.tensor([trans.get(i)], device=self.device)
+                           for trans in batch]) for i in range(5)]
 
     def __len__(self):
         return len(self.memory)

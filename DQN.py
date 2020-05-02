@@ -45,7 +45,7 @@ def optimize_model(gv):
     done = done.view(-1)
 
     profit = gv.policy_net(states).gather(1, actions)
-    next_profit = torch.zeros(gv.dqn_config.batch_size, device=gv.device, dtype=torch.float64)
+    next_profit = torch.zeros(gv.dqn_config.batch_size, device=gv.device, dtype=torch.float32)
     next_profit[done] = gv.target_net(next_states[done]).max(1)[0].detach()
     expected_reward = (next_profit.unsqueeze(1) * gv.dqn_config.gamma) + rewards
 
@@ -146,6 +146,7 @@ def init_parser():
     arg_parser.add_argument("--target_update", type=int, default=5)
     arg_parser.add_argument("--eps_decay", type=int, default=1000)
     arg_parser.add_argument("--env_name", default='CartPole-v1')
+    arg_parser.add_argument("--t", type=float, default=1.0)
 
     return arg_parser
 
@@ -158,7 +159,8 @@ def create_dqn_config(args):
         batch_size=args.batch_size, lr=args.lr,
         neuron_number=args.neuron_number, num_episodes=args.num_episodes,
         gamma=args.gamma, memory_size=args.memory_size,
-        target_update=args.target_update, eps_decay=args.eps_decay
+        target_update=args.target_update, eps_decay=args.eps_decay,
+        t=args.t
     )
 
 

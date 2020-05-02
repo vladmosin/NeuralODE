@@ -45,7 +45,7 @@ class Tester:
             for t in count():
                 action = self.action_selector.select_action(
                     model=self.model, state=state, with_eps_greedy=self.exploration)
-                next_state, reward, done, _ = self.env.step([action.item()])
+                next_state, reward, done, _ = self.env.step(action.item())
                 episode_reward += reward
 
                 state = to_tensor(next_state, self.device)
