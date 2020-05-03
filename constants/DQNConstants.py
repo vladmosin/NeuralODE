@@ -20,7 +20,7 @@ class DQNConstants:
         self.batch_size = batch_size
         self.target_update = target_update
         self.gamma = gamma
-        self.agent_type = AgentType.Common
+        self.agent_type = AgentType.BlockODE
         self.device = device
         self.env = env
 
