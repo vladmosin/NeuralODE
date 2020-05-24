@@ -37,7 +37,7 @@ class ExpressiveInverseAgent(nn.Module):
 class ExpressiveInverseBlock(nn.Module):
     def __init__(self, action_dim, state_dim, t, device):
         super(ExpressiveInverseBlock, self).__init__()
-        self.times = torch.tensor([0, t], device=device)
+        self.times = torch.tensor([0.0, t], device=device, dtype=torch.float)
         self.device = device
         self.action_dim = action_dim
         self.grad = ExpressiveGradient(action_dim=action_dim, state_dim=state_dim, device=device)
@@ -76,4 +76,6 @@ class ExpressiveGradient(nn.Module):
 
     def inverse(self, state, action):
         state = self.state_transform(state)
-        return self.action_layer.backward(self.relu.backward(action + state))
+        print(state.shape)
+        print(state.item())
+        return self.action_layer.backward(self.relu.backward(action - state))

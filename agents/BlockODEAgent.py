@@ -24,7 +24,7 @@ class ODEBlock(nn.Module):
         self.model = ODEFunction(device, neuron_number)
 
     def forward(self, x):
-        return odeint(self.model, x, self.times, method="euler")[1]
+        return odeint(self.model, x, self.times, method="euler")[1] - x
 
 
 class BlockODEAgent(nn.Module):

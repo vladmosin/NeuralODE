@@ -48,7 +48,7 @@ class NoisedSelector:
         self.eps_decay = eps_decay
 
     def select_action(self, model, state, with_eps_greedy=True):
-        action = model(state).view(-1, 1)
+        action = model(state).view(1, -1)
         noise = self.eps * (random() - 0.5)
 
         if with_eps_greedy:
@@ -74,6 +74,7 @@ class InverseNoisedSelector:
 
     def select_action(self, model, state, with_eps_greedy=True):
         action = model.best_action(state.view(1, -1))
+        print(action.item())
         noise = self.eps * (random() - 0.5)
 
         if with_eps_greedy:

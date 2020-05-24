@@ -4,6 +4,7 @@ import torch
 
 from torch import nn
 
+from agents.BlockODEAgent import ODEBlock
 from agents.CommonAgent import CommonAgent
 from enums.AgentType import AgentType
 from utils.ActionSelector import NoisedSelector
@@ -19,7 +20,7 @@ class DDPGConstants:
         self.tau = 0.05
         self.agent_type = AgentType.Common
 
-        self.num_episodes = 300
+        self.num_episodes = 1000
         self.start_eps = 0.9
         self.end_eps = 0.005
         self.eps_decay = 1000
@@ -35,13 +36,14 @@ class DDPGConstants:
 
         actor = DDPGActor(
             obs_size=state_space_dim,
-            act_size=action_space_dim
-        ).double().to(device=self.device)
+            act_size=action_space_dim,
+            device=self.device
+        ).to(device=self.device)
 
         critic = DDPGCritic(
             obs_size=state_space_dim,
             act_size=action_space_dim
-        ).double().to(device=self.device)
+        ).to(device=self.device)
 
         critic_optimizer = torch.optim.Adam(critic.parameters(), lr=self.critic_lr)
         actor_optimizer = torch.optim.Adam(actor.parameters(), lr=self.actor_lr)
@@ -66,18 +68,23 @@ class DDPGConstants:
 
 
 class DDPGActor(nn.Module):
-    def __init__(self, obs_size, act_size):
+    def __init__(self, obs_size, act_size, device):
         super(DDPGActor, self).__init__()
 
+    #    self.net = nn.Sequential(
+    #        nn.Linear(obs_size, 400),
+    #        nn.LayerNorm(400),
+    #        nn.ReLU(),
+    #        nn.Linear(400, 300),
+    #        nn.LayerNorm(300),
+    #        nn.ReLU(),
+    #        nn.Linear(300, act_size),
+    #        nn.Tanh(),
+    #    )
+
         self.net = nn.Sequential(
-            nn.Linear(obs_size, 400),
-            nn.LayerNorm(400),
-            nn.ReLU(),
-            nn.Linear(400, 300),
-            nn.LayerNorm(300),
-            nn.ReLU(),
-            nn.Linear(300, act_size),
-            nn.Tanh(),
+            #nn.Linear(2, 2).to(device=device)
+            ODEBlock(device=device, neuron_number=2, t=0.01),
         )
 
     def forward(self, x):
@@ -87,6 +94,7 @@ class DDPGActor(nn.Module):
 class DDPGCritic(nn.Module):
     def __init__(self, obs_size, act_size):
         super(DDPGCritic, self).__init__()
+
 
         self.obs_net = nn.Sequential(
             nn.Linear(obs_size, 400),
@@ -104,3 +112,6 @@ class DDPGCritic(nn.Module):
     def forward(self, state, action):
         obs = self.obs_net(state)
         return self.out_net(torch.cat([obs, action], dim=1))
+
+
+

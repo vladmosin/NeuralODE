@@ -11,18 +11,42 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
-def find_equals_experiments(path, time_from="2020-03-27_00-00-00", time_to="2020-03-29_00-00-00"):
-    paths_to_csv = {}
+def find_equals_experiments(path, time_from, time_to, params):
+    paths_to_csv_ode = {}
+    paths_to_csv_common = {}
+
+    common_path = "{}/Common".format(path)
+    ode_path = "{}/BlockODE".format(path)
+
+    fill_paths_to_csv(ode_path, paths_to_csv_ode, params, False)
+    fill_paths_to_csv(common_path, paths_to_csv_common, params, True)
+
+    return paths_to_csv_ode, paths_to_csv_common
+
+
+def fill_paths_to_csv(path, paths_to_csv, params, common):
     for experiment in listdir(path):
         if time_from <= experiment <= time_to:
             config = read_config(path, experiment)
-            str_config = config_to_string(config)
+
+            if not config_satisfies(config):
+                continue
+
+            str_config = config_to_string(config, params, common)
             if str_config not in paths_to_csv:
                 paths_to_csv[str_config] = []
 
             paths_to_csv[str_config].append("{}/{}".format(path, experiment))
 
-    return paths_to_csv
+
+def config_satisfies(config):
+    for line in config:
+        parts = line.split("=")
+        if parts[0] == "neuron_number":
+            if int(parts[1]) != 16:
+                return False
+
+    return True
 
 
 def read_config(path, experiment):
@@ -33,27 +57,35 @@ def read_config(path, experiment):
     return lines
 
 
-def config_to_string(config):
-    return "\n".join(config)
+def config_to_string(config, params, common):
+    observed_params = []
+    for line in config:
+        parts = line.split("=")
+        if common and parts[0] == 't':
+            continue
+        elif parts[0] in params:
+            observed_params.append(line)
+
+    return ", ".join(observed_params)
 
 
 def config_from_string(line):
     return line.split("\n")
 
 
-def draw_graph(str_configs, path_to_csv, on_one_plot=6, cols=2):
-    n = len(str_configs)
-    rows = max(n // (cols * on_one_plot), 1)
-    figs = [[go.Figure() for _ in range(cols)] for _ in range(rows)]
-    row, col = 0, 0
-    for str_config in str_configs:
-        num_episodes = get_num_episodes(str_config)
+def draw_graph(path_to_csv_common, path_to_csv_ode, filename):
+    fig = go.Figure()
+    add_rewards(paths_to_csv_common, fig, 1000)
+    add_rewards(paths_to_csv_ode, fig, 1000, prefix="ODE: ")
+
+    plotly.offline.plot(fig, filename=filename)
+
+
+def add_rewards(path_to_csv, fig, num_episodes, prefix=""):
+    for str_config in path_to_csv:
         rewards = get_rewards(str_config, path_to_csv)
         indexes = list(range(1, num_episodes, num_episodes // len(rewards)))
-        figs[row][col].add_trace(go.Scatter(x=indexes, y=rewards,
-                                 name=get_name_from_config(str_config)))
-        row, col = next_row_col((row, col), rows, cols)
-        save_figures(figs)
+        fig.add_trace(go.Scatter(x=indexes, y=rewards, name=prefix + str_config))
 
 
 def save_figures(figs):
@@ -104,7 +136,16 @@ def get_rewards(str_config, paths_to_csv):
         data = pd.read_csv("{}/log.csv".format(path))
         rewards.append(summarize_rewards(data))
 
-    return np.array(rewards).mean(axis=0)
+    return smooth(np.array(rewards).mean(axis=0))
+
+
+def smooth(l):
+    res = [(l[0] + l[1]) / 2]
+    for i in range(1, len(l) - 1):
+        res.append((l[i - 1] + l[i] + l[i + 1]) / 3)
+    res.append((l[-1] + l[-2]) / 2)
+
+    return res
 
 
 def get_num_episodes(str_config):
@@ -119,7 +160,7 @@ def summarize_rewards(data: pd.DataFrame):
     data = data[['index', 'reward']]
     rewards = []
     index_from, index_to = data['index'].min(), data['index'].max()
-    for i in range(index_from, index_to + 1):
+    for i in range(int(index_from), int(index_to) + 1):
         reward = data[data['index'] == i]['reward'].mean()
         rewards.append(reward)
 
@@ -128,20 +169,26 @@ def summarize_rewards(data: pd.DataFrame):
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--path", default="../DataNeuralODE/Data/experiments/BlockODE")
-    arg_parser.add_argument("--date_from", default="2020-03-27")
-    arg_parser.add_argument("--date_to", default="2020-03-29")
+    arg_parser.add_argument("--path", default="../DataNeuralODE/Data/experiments2")
+    arg_parser.add_argument("--date_from", default="2020-05-01")
+    arg_parser.add_argument("--date_to", default="2020-05-29")
+    arg_parser.add_argument("--params", action='append')
 
     args = arg_parser.parse_args(sys.argv[1:])
     path = args.path
     time_from = args.date_from
     time_to = args.date_to
+    params = args.params
 
     if time_from.split('-') == 3:
         time_from = time_from + "_00-00-00"
     if time_to.split('-') == 3:
         time_to = time_to + "_00-00-00"
 
-    paths_to_csv = find_equals_experiments(path=path, time_from=time_from, time_to=time_to)
-    str_configs = paths_to_csv.keys()
-    draw_graph(str_configs=str_configs, path_to_csv=paths_to_csv)
+    Path("results").mkdir(parents=True, exist_ok=True)
+    filename = "results/experiments{}".format(len(listdir("results")))
+
+    paths_to_csv_ode, paths_to_csv_common = find_equals_experiments(
+        path=path, time_from=time_from, time_to=time_to, params=params
+    )
+    draw_graph(path_to_csv_common=paths_to_csv_common, path_to_csv_ode=paths_to_csv_ode, filename=filename)

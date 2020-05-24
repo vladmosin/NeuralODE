@@ -9,10 +9,11 @@ from tqdm import tqdm
 from constants.DDPGConstants import DDPGConstants
 from enums.DistanceType import DistanceType
 from enums.Exploration import Exploration
+from envs.spiral import SpiralEnv
 from utils.Tester import Tester
-from utils.Utils import soft_update_backprop, to_tensor
+from utils.Utils import soft_update_backprop, to_tensor, to_numpy
 
-env = gym.make('MountainCarContinuous-v0')
+env = SpiralEnv()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -24,11 +25,9 @@ def optimize_model():
         return
 
     states, actions, next_states, rewards, not_dones = memory.sample(ddpg_config.batch_size)
-    states = states.detach()
-    actions = actions.detach()
 
     expected_profit = target_critic(next_states, target_actor(next_states))
-    expected_profit = (rewards + not_dones.double() * ddpg_config.gamma * expected_profit)
+    expected_profit = (rewards + not_dones.float() * ddpg_config.gamma * expected_profit)
     expected_profit = expected_profit.detach()
 
     current_profit = critic(states, actions)
@@ -47,7 +46,7 @@ def train():
 
         for t in count():
             action = action_selector.select_action(model=actor, state=state, with_eps_greedy=Exploration.ON)
-            next_state, reward, done,_ = env.step([action.item()])
+            next_state, reward, done, _ = env.step(to_numpy(action)[0])
             episode_reward += reward
 
             if done:
@@ -63,7 +62,7 @@ def train():
             ticks_counter.step(DistanceType.BY_OPTIMIZER_STEP)
             if ticks_counter.test_time():
                 ticks_counter.reset()
-                #logger.add(tester.test())
+                logger.add(tester.test())
 
             if done:
                 break
@@ -71,7 +70,7 @@ def train():
         ticks_counter.step(DistanceType.BY_EPISODE)
         if ticks_counter.test_time():
             ticks_counter.reset()
-            #logger.add(tester.test())
+            logger.add(tester.test())
         print(episode_reward)
 
 
@@ -95,8 +94,8 @@ if __name__ == '__main__':
                     agent_type=ddpg_config.agent_type,
                     exploration=Exploration.OFF)
 
-    #logger = tester.create_csv_logger()
+    logger = tester.create_csv_logger(ddpg_config)
     ticks_counter = tester.create_ticks_counter()
     train()
-    #logger.to_csv()
-    #logger.to_tensorboard()
+    logger.to_csv()
+    logger.to_tensorboard()
