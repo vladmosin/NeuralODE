@@ -7,7 +7,7 @@ from agents.ODEAgent import ODEAgent
 from enums.AgentType import AgentType
 from utils.ActionSelector import ActionSelector
 from utils.MemoryReplay import MemoryReplay
-from utils.RewardConverter import CartPoleConverter
+from utils.RewardConverter import MountainCarConverter
 
 
 class DQNConstants:
@@ -81,7 +81,7 @@ class DQNConstants:
 
     # Should add if on different environments
     def get_reward_converter(self):
-        return CartPoleConverter()
+        return MountainCarConverter()
 
     def __str__(self):
         params = self.__dict__
