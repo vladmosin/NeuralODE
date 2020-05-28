@@ -6,7 +6,9 @@ TASKS_PER_RUN = 22
 
 def generate_configs(repetitions=8):
     Path("arguments").mkdir(parents=True, exist_ok=True)
+    Path("run").mkdir(parents=True, exist_ok=True)
     shutil.rmtree('arguments')
+    shutil.rmtree('run')
     f = open("settup", "r")
     names, values, lengths = [], [], []
     for line in f.readlines():
