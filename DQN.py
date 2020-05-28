@@ -184,11 +184,9 @@ if __name__ == "__main__":
         args = parser.parse_args(line.split())
         dqn_config = create_dqn_config(args)
 
-        #process = Process(target=runner, args=(dqn_config, args.env_name))
-        #process.start()
-        #processes.append(process)
+        process = Process(target=runner, args=(dqn_config, args.env_name))
+        process.start()
+        processes.append(process)
 
-        runner(dqn_config, args.env_name)
-
-    #for process in processes:
-        #process.join()
+    for process in processes:
+        process.join()
