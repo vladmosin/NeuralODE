@@ -180,9 +180,10 @@ if __name__ == "__main__":
 
     processes = []
 
-    for line in arguments[:1]:
+    for line in arguments:
         args = parser.parse_args(line.split())
         dqn_config = create_dqn_config(args)
+        #runner(dqn_config, args.env_name)
 
         process = Process(target=runner, args=(dqn_config, args.env_name))
         process.start()
