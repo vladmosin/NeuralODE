@@ -62,7 +62,7 @@ class Logger:
 
     def save_all(self):
         cur_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        directory = "experiments/{}/{}".format(self.config.agent_type.value, cur_time)
+        directory = "experiments1/{}/{}".format(self.config.agent_type.value, cur_time)
         Path(directory).mkdir(parents=True, exist_ok=True)
 
         self.save_losses(directory)
