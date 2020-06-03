@@ -142,10 +142,10 @@ def init_parser():
     arg_parser.add_argument("--neuron_number", type=int, default=40)
     arg_parser.add_argument("--num_episodes", type=int, default=1000)
     arg_parser.add_argument("--gamma", type=float, default=0.998)
-    arg_parser.add_argument("--memory_size", type=int, default=20000)
-    arg_parser.add_argument("--target_update", type=int, default=10)
+    arg_parser.add_argument("--memory_size", type=int, default=200000)
+    arg_parser.add_argument("--target_update", type=int, default=30)
     arg_parser.add_argument("--eps_decay", type=int, default=1000)
-    arg_parser.add_argument("--env_name", default='MountainCar-v0')
+    arg_parser.add_argument("--env_name", default='LunarLander-v2')
     arg_parser.add_argument("--t", type=float, default=1.0)
 
     return arg_parser

@@ -10,4 +10,4 @@ class MountainCarConverter:
         return reward
 
     def final_reward(self, reward, iteration):
-        return 0
+        return reward

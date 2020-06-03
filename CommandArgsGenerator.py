@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 
-TASKS_PER_RUN = 22
+TASKS_PER_RUN = 5
 
 
 def generate_configs(repetitions=8):
