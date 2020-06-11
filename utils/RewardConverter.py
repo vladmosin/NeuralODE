@@ -7,7 +7,7 @@ class CartPoleConverter:
 
 class MountainCarConverter:
     def convert_reward(self, state, reward):
-        return reward
+        return reward + 10 * abs(state[0][1])
 
     def final_reward(self, reward, iteration):
         return reward

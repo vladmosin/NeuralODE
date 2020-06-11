@@ -145,7 +145,7 @@ def init_parser():
     arg_parser.add_argument("--memory_size", type=int, default=5000)
     arg_parser.add_argument("--target_update", type=int, default=30)
     arg_parser.add_argument("--eps_decay", type=int, default=1000)
-    arg_parser.add_argument("--env_name", default='MountainCar-V0')
+    arg_parser.add_argument("--env_name", default='MountainCar-v0')
     arg_parser.add_argument("--t", type=float, default=1.0)
 
     return arg_parser
