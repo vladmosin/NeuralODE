@@ -137,15 +137,15 @@ def runner(dqn_config, env_name):
 
 def init_parser():
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--batch_size", type=int, default=256)
+    arg_parser.add_argument("--batch_size", type=int, default=64)
     arg_parser.add_argument("--lr", type=float, default=1e-3)
-    arg_parser.add_argument("--neuron_number", type=int, default=40)
+    arg_parser.add_argument("--neuron_number", type=int, default=32)
     arg_parser.add_argument("--num_episodes", type=int, default=1000)
-    arg_parser.add_argument("--gamma", type=float, default=0.998)
-    arg_parser.add_argument("--memory_size", type=int, default=200000)
+    arg_parser.add_argument("--gamma", type=float, default=0.99)
+    arg_parser.add_argument("--memory_size", type=int, default=5000)
     arg_parser.add_argument("--target_update", type=int, default=30)
     arg_parser.add_argument("--eps_decay", type=int, default=1000)
-    arg_parser.add_argument("--env_name", default='LunarLander-v2')
+    arg_parser.add_argument("--env_name", default='MountainCar-V0')
     arg_parser.add_argument("--t", type=float, default=1.0)
 
     return arg_parser
@@ -183,7 +183,6 @@ if __name__ == "__main__":
     for line in arguments:
         args = parser.parse_args(line.split())
         dqn_config = create_dqn_config(args)
-        #runner(dqn_config, args.env_name)
 
         process = Process(target=runner, args=(dqn_config, args.env_name))
         process.start()

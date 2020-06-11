@@ -13,14 +13,14 @@ from utils.RewardConverter import MountainCarConverter
 class DQNConstants:
     def __init__(self, device, env, batch_size=64, lr=1e-3,
                  neuron_number=64, num_episodes=1000,
-                 gamma=0.999, memory_size=20000,
+                 gamma=0.999, memory_size=5000,
                  target_update=5, eps_decay=1000, t=1.0):
         self.num_episodes = num_episodes
         self.test_episodes = 10
         self.batch_size = batch_size
         self.target_update = target_update
         self.gamma = gamma
-        self.agent_type = AgentType.Common
+        self.agent_type = AgentType.BlockODE
         self.device = device
         self.env = env
 

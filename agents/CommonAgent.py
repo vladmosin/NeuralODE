@@ -9,8 +9,6 @@ class CommonAgent(nn.Module):
             nn.ReLU(),
             nn.Linear(neuron_number, neuron_number),
             nn.ReLU(),
-            nn.Linear(neuron_number, neuron_number),
-            nn.ReLU(),
             nn.Linear(neuron_number, output_dim)
         ).to(device)
 

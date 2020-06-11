@@ -41,8 +41,6 @@ class BlockODEAgent(nn.Module):
             nn.ReLU(),
             ODEBlock(neuron_number, neuron_number, t),
             nn.ReLU(),
-            ODEBlock(neuron_number, neuron_number, t),
-            nn.ReLU(),
             nn.Linear(neuron_number, output_dim)
         ).to(device)
 
